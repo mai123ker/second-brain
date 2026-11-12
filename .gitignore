@@ -1,0 +1,29 @@
+# 本机私密文件：含 API Key，绝不入库
+config.json
+
+# 可重建的索引 / 快照 / 备份产物
+.index/
+.backup/
+backup/
+.backup_state.json
+
+# 认知库（V2）运行时数据：属于用户内容，不入库
+vault/
+
+# 用户内容里的非笔记目录（对话、附件、回收站、归档、旧版碎片）
+records/_chat/
+records/_assets/
+records/_trash/
+records/_archive/
+records/_v0_fragments/
+
+# Python 与临时文件
+__pycache__/
+*.py[cod]
+.tmp*
+
+# 桌面打包产物
+desktop/dist/
+desktop/src-tauri/binaries/
+desktop/src-tauri/target/
+.tmp-build/

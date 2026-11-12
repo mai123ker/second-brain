@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second Brain</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231D6E56'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23FDFCFA' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.2' fill='%23FDFCFA'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="vault">Second Brain</div>
+    <div class="tree-actions">
+      <button type="button" class="tree-btn" id="new-note-btn" title="新建笔记" aria-label="新建笔记">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2H4.6A1.6 1.6 0 0 0 3 3.6v8.8A1.6 1.6 0 0 0 4.6 14h6.8a1.6 1.6 0 0 0 1.6-1.6V8"/><path d="M12.2 1.8v4.4M10 4h4.4"/></svg>
+      </button>
+      <button type="button" class="tree-btn" id="new-folder-btn" title="新建文件夹" aria-label="新建文件夹">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.2A1.2 1.2 0 0 1 3.2 3h3l1.4 1.4h4.2A1.2 1.2 0 0 1 13 5.6v6.2A1.2 1.2 0 0 1 11.8 13H3.2A1.2 1.2 0 0 1 2 11.8z"/><path d="M7.5 7.6v3M6 9.1h3"/></svg>
+      </button>
+      <span class="tree-sep"></span>
+      <button type="button" class="tree-btn" id="collapse-btn" title="收起全部" aria-label="收起全部">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11"/><path d="M8 8.5v3"/></svg>
+      </button>
+      <button type="button" class="tree-btn" id="expand-btn" title="展开全部" aria-label="展开全部">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11"/><path d="M8 9V6.5M6.4 8L8 9.6 9.6 8"/></svg>
+      </button>
+      <button type="button" class="tree-text-btn" id="all-todos-btn" title="全部待办">待办 <span id="todo-badge">0</span></button>
+    </div>
+    <div class="tree" id="tree"></div>
+    <div class="tree-legend" aria-label="文件树状态图例">
+      <div class="legend-title">标记＝有没有归到目标</div>
+      <span><i class="status-dot pending"></i>还没归类</span>
+      <span><i class="status-dot placed"></i>已归类</span>
+      <span><i class="legend-ask">问</i>在等你回答</span>
+      <span title="目录名后的数字＝这个文件夹里还没归类的篇数"><i class="legend-num">…</i>待归类篇数</span>
+    </div>
+  </aside>
+  <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" tabindex="0"
+       aria-label="拖动调整左右宽度（双击复位）" title="拖动调整宽度 · 双击复位"></div>
+  <main class="main">
+    <header class="docbar">
+      <div class="crumb" id="crumb">从左侧选一篇文档</div>
+      <span class="doc-target hidden" id="doc-target" title=""></span>
+      <span class="anchor-hint hidden" id="anchor-hint" title="对话内容将写入这里"></span>
+      <div class="tools">
+        <span class="cov-badge hidden" id="cov-badge" title=""></span>
+        <span class="save-state" id="save-state"></span>
+        <span class="tool-sep"></span>
+        <button type="button" class="btn" id="search-btn" title="搜索（Ctrl+K）">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7" cy="7" r="4"/><path d="M10 10l3.5 3.5"/></svg>
+          <span>搜索</span>
+        </button>
+        <button type="button" class="btn" id="revisions-btn" title="历史版本">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 4.8v3.4l2.4 1.4"/></svg>
+          <span>历史</span>
+        </button>
+        <span class="tool-sep"></span>
+        <button type="button" class="btn" id="chat-btn" title="对话面板">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.2A1.7 1.7 0 0 1 4.2 2.5h7.6a1.7 1.7 0 0 1 1.7 1.7v5.1a1.7 1.7 0 0 1-1.7 1.7H7l-3.2 2.3v-2.3h-.1a1.7 1.7 0 0 1-1.2-1.7z"/></svg>
+          <span>对话</span>
+        </button>
+        <button type="button" class="btn icon-only" id="settings-btn" title="模型 / 设置" aria-label="模型设置">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v1.5M8 12.7v1.5M1.8 8h1.5M12.7 8h1.5M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1"/></svg>
+        </button>
+        <a class="btn" href="/new" title="新版：把对话和资料整理成框架与待办" style="text-decoration:none">新版</a>
+      </div>
+    </header>
+    <p class="hint" id="hint"></p>
+    <div class="notice hidden" id="notice"></div>
+    <div class="inline-form hidden" id="inline-form"></div>
+    <div class="pending-actions hidden" id="pending-actions"></div>
+    <article class="doc" id="doc-body"></article>
+    <nav class="outline hidden" id="outline" aria-label="文档大纲"></nav>
+  </main>
+  <div class="resizer" id="resizer-chat" role="separator" aria-orientation="vertical" tabindex="0"
+       aria-label="拖动调整正文与对话宽度（双击复位）" title="拖动调整宽度 · 双击复位"></div>
+  <aside class="chat" id="chat">
+    <header class="chat-head">
+      <div class="chat-title">对话 <span class="readonly-badge hidden" id="chat-readonly" title="只读对话：这段对话不会写入任何文档">只读</span></div>
+      <div class="chat-sub" id="chat-sub">未打开文档</div>
+      <span class="chat-head-actions">
+        <button type="button" class="chat-clear" id="chat-summarize" title="总结这段对话的关键内容，归档成一篇笔记（写不写盘你拍板）">总结</button>
+        <button type="button" class="chat-clear" id="chat-export" title="导出这段对话到本机（不改正文）">导出</button>
+        <button type="button" class="chat-clear" id="chat-clear" title="清空这段对话">清空</button>
+      </span>
+    </header>
+    <div class="chat-inbox hidden" id="chat-inbox" aria-label="文档的提问"></div>
+    <div class="chat-log" id="chat-log"></div>
+    <div class="chat-foot">
+      <div class="chat-chips hidden" id="chat-chips"></div>
+      <div class="chat-box">
+        <textarea id="chat-input" rows="2" placeholder="今天想理清什么？ @ 引用文档 / 拖文件进来整理 / 指令" spellcheck="false"></textarea>
+        <div class="chat-bar">
+          <button type="button" class="chat-tool" id="chat-plus" title="添加上下文文档" aria-label="添加上下文文档">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+          </button>
+          <button type="button" class="chat-tool chat-web" id="chat-web" title="联网搜索：这次回答前先上网查最新资料（只发问题关键词，不上传文档）" aria-label="联网搜索" aria-pressed="false">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M2.5 8h11M8 2.5c-3.2 3.4-3.2 7.6 0 11M8 2.5c3.2 3.4 3.2 7.6 0 11"/></svg>
+            <span>联网</span>
+          </button>
+          <label class="chat-perm" title="这次对话的权限">
+            <select id="chat-perm">
+              <option value="patch">允许补充</option>
+              <option value="read">只读对话</option>
+            </select>
+          </label>
+          <button type="button" class="chat-tool hidden" id="chat-mic" title="语音输入" aria-label="语音输入">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.6" y="2.2" width="4.8" height="7.2" rx="2.4"/><path d="M3.6 7.6a4.4 4.4 0 0 0 8.8 0"/><path d="M8 12v2"/></svg>
+          </button>
+          <span class="chat-grow"></span>
+          <span class="chat-model" id="chat-model" title="当前模型">…</span>
+          <button type="button" class="chat-send" id="chat-send" title="发送（Enter）" aria-label="发送">
+            <svg class="icon-send" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M3.6 7.4L8 3l4.4 4.4"/></svg>
+            <svg class="icon-stop hidden" viewBox="0 0 16 16" fill="currentColor"><rect x="4.6" y="4.6" width="6.8" height="6.8" rx="1.6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="chat-pop hidden" id="chat-pop"></div>
+      <p class="chat-tips">@ 引用文档 · / 调用指令 · Enter 发送 · Shift+Enter 换行</p>
+    </div>
+  </aside>
+</div>
+<div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+<div class="modal hidden" id="settings-modal">
+  <div class="modal-mask" id="settings-mask"></div>
+  <div class="modal-card" role="dialog" aria-label="模型设置">
+    <header class="modal-head">
+      <h2>模型设置</h2>
+      <button type="button" class="modal-close" id="settings-close" aria-label="关闭">×</button>
+    </header>
+    <p class="modal-hint">只保存在本机 <code id="settings-path">config.json</code>，Key 不回显、不上传。改完立即生效，不用重启。</p>
+    <div class="model-list" id="model-list"></div>
+    <div class="model-form">
+      <div class="mf-row"><label>名称<input id="mf-label" placeholder="DeepSeek"></label>
+        <label>模型名<input id="mf-model" placeholder="deepseek-chat"></label></div>
+      <label>Base URL<input id="mf-base" placeholder="https://api.deepseek.com/v1"></label>
+      <label>API Key<input id="mf-key" type="password" placeholder="sk-…" autocomplete="off"></label>
+      <div class="model-actions">
+        <button type="button" class="btn accent" id="mf-save">保存并启用</button>
+        <button type="button" class="btn" id="mf-test">测试连接</button>
+        <span class="model-status" id="mf-status"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/vendor/highlight.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
